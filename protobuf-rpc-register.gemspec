@@ -9,8 +9,8 @@ Gem::Specification.new do |spec|
   spec.authors       = ["scorix"]
   spec.email         = ["scorix@gmail.com"]
 
-  spec.summary       = %q{TODO: Write a short summary, because Rubygems requires one.}
-  spec.description   = %q{TODO: Write a longer description or delete this line.}
+  spec.summary       = %q{Register for rpc services using protobuf rpc.}
+  spec.description   = %q{Register for rpc services using protobuf rpc.}
   spec.homepage      = "TODO: Put your gem's website or public repo URL here."
   spec.license       = "MIT"
 
