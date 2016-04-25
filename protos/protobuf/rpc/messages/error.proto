@@ -1,0 +1,9 @@
+syntax = "proto2";
+
+package protobuf.rpc.messages;
+
+message Error {
+    required string error_class = 1;
+    optional string error_message = 2;
+    optional string error_backtrace = 3;
+}

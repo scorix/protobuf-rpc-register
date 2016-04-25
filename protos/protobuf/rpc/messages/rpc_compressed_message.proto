@@ -1,0 +1,18 @@
+syntax = "proto2";
+
+package protobuf.rpc.messages;
+
+message RpcCompressedMessage {
+    optional bool compressed = 1 [default = true];
+    optional string response_type = 2;
+    required bytes response_body = 3;
+
+    enum Serializer{
+        RAW = 0;
+        MSGPACK = 1;
+        YAML = 2;
+        JSON = 3;
+        MARSHAL = 4;
+    }
+    optional Serializer serializer = 4 [default = 1];
+}
