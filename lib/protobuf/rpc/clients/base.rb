@@ -4,8 +4,11 @@ module Protobuf
       class Base
         attr_accessor :logger
 
+        mattr_reader(:mutex) { Mutex.new }
+
         def initialize(options = {})
           @options = options
+          @namespace = options[:namespace]
           @logger ||= Logger.new(STDOUT)
         end
 
@@ -15,9 +18,9 @@ module Protobuf
           names = self.class.name.split('::')
           svc_class = [names[0..-3], 'Services', names[-1]].flatten.join('::')
 
-          Object.const_get(svc_class).client(@options).send(method, pack(msg)) do |c|
+          Object.const_get(svc_class).client(@options).send(method, Serializer.dump(msg)) do |c|
             c.on_success do |rpc_compressed_message|
-              res = unpack(rpc_compressed_message)
+              res = Protobuf::Rpc::Serializer.load(rpc_compressed_message)
             end
 
             c.on_failure do |error|
@@ -29,62 +32,55 @@ module Protobuf
             end
           end
 
+          check_response_error(res)
+        end
+
+        def check_response_error(res, raise_error: true)
           if res.is_a?(Messages::Error)
-            error = res.error_class.constantize.new(res.error_message)
+            error_class = self.class.mutex.synchronize do
+              module_name = @namespace.camelize
+              m = Object.const_defined?(module_name, false) ? Object.const_get(module_name, false) : Object.const_set(module_name, Module.new)
+              m.const_defined?(:Rpc, false) ? m.const_get(:Rpc, false) : m.const_set(:Rpc, Module.new)
+
+              if m.const_defined?(res.error_class, false)
+                m.const_get(res.error_class, false)
+              else
+                module_name = res.error_class.deconstantize
+                class_name = res.error_class.demodulize
+                base_module = m::Rpc
+                module_name.split('::').each do |m|
+                  base_module.const_defined?(m, false) || base_module.const_set(m, Module.new)
+                  base_module = base_module.const_get(m, false)
+                end
+                error_superclass = res.error_class.safe_constantize || begin
+                  require res.error_class.split('::')[0].underscore
+                  res.error_class.constantize
+                rescue LoadError
+                  raise NameError.new("uninitialized constant #{res.error_class}", res.error_class)
+                end
+                base_module.const_set(class_name, Class.new(error_superclass) do
+                  def initialize(message = nil)
+                    @message = message
+                  end
+
+                  def inspect
+                    "#{self.class}: #{@message}"
+                  end
+
+                  def message
+                    @message
+                  end
+                end)
+              end
+            end
+
+            error = error_class.new(res.error_message)
             error.set_backtrace(res.error_backtrace)
             logger.error error
-            raise error
+            raise error if raise_error
+            error
           else
             res
-          end
-        end
-
-        def pack(rpc_uncompressed_message)
-          msg = rpc_uncompressed_message
-          case msg
-            when ::Protobuf::Message
-              msg = {compressed: true,
-                     response_type: msg.class.name,
-                     response_body: ActiveSupport::Gzip.compress(msg.bytes),
-                     serializer: :RAW}
-            when String
-              msg = {compressed: true,
-                     response_type: nil,
-                     response_body: ActiveSupport::Gzip.compress(msg.to_msgpack),
-                     serializer: :MSGPACK}
-            else
-              msg = {compressed: false,
-                     response_type: nil,
-                     response_body: msg.to_msgpack,
-                     serializer: :MSGPACK}
-          end
-          Protobuf::Rpc::Messages::RpcCompressedMessage.new(msg)
-        end
-
-        def unpack(rpc_compressed_message)
-          decompressed_body = if rpc_compressed_message.compressed
-                                ActiveSupport::Gzip.decompress(rpc_compressed_message.response_body)
-                              else
-                                rpc_compressed_message.response_body
-                              end
-
-          if rpc_compressed_message.response_type.present?
-            Object.const_get(rpc_compressed_message.response_type).decode(decompressed_body)
-          else
-            case rpc_compressed_message.serializer.name
-              when :RAW
-                decompressed_body
-              when :MSGPACK
-                MessagePack.unpack(decompressed_body)
-              when :MARSHAL
-                Marshal.load(decompressed_body)
-              when :JSON
-                MultiJson.load(decompressed_body)
-              when :YAML
-                YAML.load(decompressed_body)
-              else
-                decompressed_body
-            end
           end
         end
 

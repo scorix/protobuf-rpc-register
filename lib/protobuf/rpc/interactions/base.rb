@@ -1,7 +1,9 @@
+require 'active_interaction'
+
 module Protobuf
   module Rpc
     module Interactions
-      class Base
+      class Base < ::ActiveInteraction::Base
         def self.except_attributes
           [].freeze
         end

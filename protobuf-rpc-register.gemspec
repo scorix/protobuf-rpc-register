@@ -33,11 +33,12 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rspec-its', '~> 1.2'
   spec.add_development_dependency 'pry'
   spec.add_development_dependency 'simplecov', '> 0.11'
+  spec.add_development_dependency 'msgpack'
+  spec.add_development_dependency 'multi_json'
+  spec.add_development_dependency 'oj'
 
   spec.add_runtime_dependency 'protobuf', '~> 3.5'
   spec.add_runtime_dependency 'google-protobuf'
-  spec.add_runtime_dependency 'msgpack'
-  spec.add_runtime_dependency 'multi_json'
   spec.add_runtime_dependency 'active_interaction', '>= 3'
   spec.add_runtime_dependency 'activesupport', '> 4'
 end
