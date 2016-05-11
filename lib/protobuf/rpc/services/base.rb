@@ -29,6 +29,8 @@ module Protobuf
             result = nil
             req = Serializer.load(request)
 
+            logger.debug(req.to_hash)
+
             begin
               interaction = Object.const_get("#{self.class.namespace}::Interactions::#{self.class.name.demodulize}::#{class_name}", false)
             rescue NameError => e
