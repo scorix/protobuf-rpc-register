@@ -27,6 +27,7 @@ module Protobuf
           define_method(method) do
             class_name = method.to_s.camelize.gsub('!', 'Bang').gsub('?', 'QuestionMark')
             result = nil
+            req = Serializer.load(request)
 
             begin
               interaction = Object.const_get("#{self.class.namespace}::Interactions::#{self.class.name.demodulize}::#{class_name}", false)
@@ -35,7 +36,7 @@ module Protobuf
               result.set_backtrace(e.backtrace)
             else
               begin
-                result = interaction.run!(request.to_hash)
+                result = interaction.run!(req.to_hash)
                 case result
                   when Protobuf::Message
                     result

@@ -38,7 +38,7 @@ module Protobuf
         def check_response_error(res, raise_error: true)
           if res.is_a?(Messages::Error)
             error_class = self.class.mutex.synchronize do
-              module_name = @namespace.camelize
+              module_name = (@namespace || 'Protobuf').camelize
               m = Object.const_defined?(module_name, false) ? Object.const_get(module_name, false) : Object.const_set(module_name, Module.new)
               m.const_defined?(:Rpc, false) ? m.const_get(:Rpc, false) : m.const_set(:Rpc, Module.new)
 
