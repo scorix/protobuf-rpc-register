@@ -58,19 +58,23 @@ module Protobuf
                 rescue LoadError
                   raise NameError.new("uninitialized constant #{res.error_class}", res.error_class)
                 end
-                base_module.const_set(class_name, Class.new(error_superclass) do
-                  def initialize(message = nil)
-                    @message = message
-                  end
+                if base_module.const_defined?(class_name, false)
+                  base_module.const_get(class_name, false)
+                else
+                  base_module.const_set(class_name, Class.new(error_superclass) do
+                    def initialize(message = nil)
+                      @message = message
+                    end
 
-                  def inspect
-                    "#{self.class}: #{@message}"
-                  end
+                    def inspect
+                      "#{self.class}: #{@message}"
+                    end
 
-                  def message
-                    @message
-                  end
-                end)
+                    def message
+                      @message
+                    end
+                  end)
+                end
               end
             end
 
