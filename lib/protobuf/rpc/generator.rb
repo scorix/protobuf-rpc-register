@@ -14,6 +14,7 @@ module Protobuf
           with.each { |m| @services[service].define_rpc(m) }
           define_client_class(service)
         end
+        self
       end
 
       private
@@ -24,7 +25,6 @@ module Protobuf
                                else
                                  @module::Services.const_set(service, Class.new(Protobuf::Rpc::Services::Base))
                                end
-        @services[service].inherit_rpcs!
       end
 
       def define_client_class(service)

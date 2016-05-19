@@ -13,12 +13,16 @@ module Protobuf
           respond_with Serializer.dump(msg)
         end
 
+        def self.inherited(subclass)
+          subclass.inherit_rpcs!
+        end
+
         def self.namespace
           self.name.deconstantize.deconstantize
         end
 
         def self.inherit_rpcs!
-          superclass.rpcs.keys.each { |x| define_rpc(x, superclass.msgclass) }
+          superclass.rpcs.keys.each { |x| define_rpc(x) }
         end
 
         def self.define_rpc(method, req = ::Protobuf::Rpc::Messages::RpcCompressedMessage, res = ::Protobuf::Rpc::Messages::RpcCompressedMessage)
