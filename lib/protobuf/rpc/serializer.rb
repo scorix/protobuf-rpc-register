@@ -49,6 +49,7 @@ module Protobuf
       end
 
       def self.load(msg)
+        return msg unless msg.is_a?(Messages::RpcCompressedMessage)
         body = msg.compressed ? ActiveSupport::Gzip.decompress(msg.response_body) : msg.response_body
 
         if msg.response_type.present?
