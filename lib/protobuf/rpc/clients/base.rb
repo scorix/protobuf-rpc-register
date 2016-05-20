@@ -90,9 +90,15 @@ module Protobuf
 
         def self.implement_rpc(rpc_method)
           define_method(rpc_method) do |*args|
-            names = self.class.name.split('::')
-            msg_class = [names[0..-3], 'Messages', names[-1]].flatten.join('::')
-            send_rpc_request(rpc_method, Object.const_get(msg_class).new(*args))
+            msg = if args.first.is_a?(Protobuf::Message)
+                    args.shift
+                  else
+                    names = self.class.name.split('::')
+                    msg_class = Object.const_get([names[0..-3], 'Messages', names[-1]].flatten.join('::'))
+                    msg_class.new(*args)
+                  end
+
+            send_rpc_request(rpc_method, msg)
           end
         end
       end
