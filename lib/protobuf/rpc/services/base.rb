@@ -6,11 +6,11 @@ module Protobuf
     module Services
       class Base < ::Protobuf::Rpc::Service
 
-        def compress_with(msg)
+        def compress_with(msg, serializer: :MSGPACK)
           if msg.is_a?(StandardError)
             msg = Messages::Error.new(error_class: msg.class.name, error_message: msg.message, error_backtrace: msg.backtrace)
           end
-          respond_with Serializer.dump(msg)
+          respond_with Serializer.dump(msg, serializer: serializer)
         end
 
         def self.inherited(subclass)
