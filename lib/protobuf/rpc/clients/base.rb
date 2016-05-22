@@ -16,7 +16,7 @@ module Protobuf
           @error_logger ||= Logger.new(stderr)
         end
 
-        def send_rpc_request(method, msg, serializer: serializer)
+        def send_rpc_request(method, msg, serializer:)
           res = nil
 
           internal_client.send(method, Serializer.dump(msg, serializer: serializer)) do |c|
