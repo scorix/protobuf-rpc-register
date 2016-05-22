@@ -8,7 +8,8 @@ module Protobuf
 
         context :check_response_error do
 
-          subject { TestClient.new.check_response_error(Serializer.load(Serializer.dump(message)), raise_error: false) }
+          let(:client) { TestClient.new(stdout: nil, stderr: nil) }
+          subject { client.check_response_error(Serializer.load(Serializer.dump(message)), raise_error: false) }
 
           context :protobuf_message do
             let(:message) { Protobuf::Message.new }

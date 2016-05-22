@@ -1,7 +1,7 @@
 module Protobuf
   module Rpc
     class Serializer
-      def self.dump(msg, serializer = nil)
+      def self.dump(msg, serializer:)
         return msg if msg.is_a?(Messages::RpcCompressedMessage)
         dumped_message = Messages::RpcCompressedMessage.new(compressed: false)
 
@@ -28,18 +28,8 @@ module Protobuf
                 yaml(dumped_message, msg)
               when :MARSHAL
                 marshal(dumped_message, msg)
-              when :RAW
-                raw(dumped_message, msg)
               else
-                if defined?(MessagePack) && msg.respond_to?(:to_msgpack)
-                  msgpack(dumped_message, msg)
-                elsif defined?(Oj)
-                  oj(dumped_message, msg)
-                elsif defined?(MultiJson)
-                  multi_json(dumped_message, msg)
-                else
-                  yaml(dumped_message, msg)
-                end
+                raw(dumped_message, msg)
             end
         end
 
