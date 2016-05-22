@@ -6,9 +6,8 @@ module Protobuf
 
         mattr_reader(:mutex) { Mutex.new }
 
-        def initialize(options = {}, stdout: STDOUT, stderr: STDERR)
-          @options = options
-          @namespace = options[:namespace]
+        def initialize(host: nil, port: nil, timeout: 1, stdout: STDOUT, stderr: STDERR, namespace: nil)
+          @namespace = namespace
           @logger ||= Logger.new(stdout)
           @error_logger ||= Logger.new(stderr)
         end
@@ -19,7 +18,7 @@ module Protobuf
           names = self.class.name.split('::')
           svc_class = [names[0..-3], 'Services', names[-1]].flatten.join('::')
 
-          Object.const_get(svc_class).client(@options).send(method, Serializer.dump(msg)) do |c|
+          Object.const_get(svc_class).client(host: host, port: port, timeout: timeout).send(method, Serializer.dump(msg)) do |c|
             c.on_success do |rpc_compressed_message|
               res = Protobuf::Rpc::Serializer.load(rpc_compressed_message)
             end
