@@ -80,6 +80,7 @@ module Protobuf
         end
 
         def msgpack(dumped_message, msg)
+          require 'msgpack' unless msg.respond_to?(:to_msgpack)
           dumped_message.response_body = msg.to_msgpack
           dumped_message.serializer = :MSGPACK
         end
@@ -91,11 +92,13 @@ module Protobuf
         end
 
         def oj(dumped_message, msg)
+          require 'oj' unless defined?(:Oj)
           dumped_message.response_body = Oj.dump(msg)
           dumped_message.serializer = :JSON
         end
 
         def multi_json(dumped_message, msg)
+          require 'multi_json' unless defined?(:MultiJson)
           dumped_message.response_body = MultiJson.dump(msg)
           dumped_message.serializer = :JSON
         end

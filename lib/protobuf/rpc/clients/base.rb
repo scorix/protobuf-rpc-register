@@ -3,22 +3,23 @@ module Protobuf
     module Clients
       class Base
         attr_accessor :logger, :error_logger
+        attr_accessor :host, :port, :timeout
 
         mattr_reader(:mutex) { Mutex.new }
 
         def initialize(host: nil, port: nil, timeout: 1, stdout: STDOUT, stderr: STDERR, namespace: nil)
+          @host = host
+          @port = port
+          @timeout = timeout
           @namespace = namespace
           @logger ||= Logger.new(stdout)
           @error_logger ||= Logger.new(stderr)
         end
 
-        def send_rpc_request(method, msg)
+        def send_rpc_request(method, msg, serializer: serializer)
           res = nil
 
-          names = self.class.name.split('::')
-          svc_class = [names[0..-3], 'Services', names[-1]].flatten.join('::')
-
-          Object.const_get(svc_class).client(host: host, port: port, timeout: timeout).send(method, Serializer.dump(msg)) do |c|
+          internal_client.send(method, Serializer.dump(msg, serializer: serializer)) do |c|
             c.on_success do |rpc_compressed_message|
               res = Protobuf::Rpc::Serializer.load(rpc_compressed_message)
             end
@@ -49,6 +50,14 @@ module Protobuf
         end
 
         private
+
+        def internal_client
+          @internal_client ||= begin
+            names = self.class.name.split('::')
+            svc_class = [names[0..-3], 'Services', names[-1]].flatten.join('::')
+            Object.const_get(svc_class).client(host: host, port: port, timeout: timeout)
+          end
+        end
 
         def define_error_class(res)
           module_name = (@namespace || 'Protobuf').camelize
@@ -100,13 +109,17 @@ module Protobuf
           define_method(rpc_method) do |*args|
             msg = if args.first.is_a?(Protobuf::Message)
                     args.shift
+                  elsif args.first.respond_to?(:to_hash)
+                    Messages::RpcCompressedMessage.new(response_body: ActiveSupport::Gzip.compress(args.first.to_hash.to_json),
+                                                       serializer: :JSON,
+                                                       compressed: true)
                   else
                     names = self.class.name.split('::')
                     msg_class = Object.const_get([names[0..-3], 'Messages', names[-1]].flatten.join('::'))
                     msg_class.new(*args)
                   end
 
-            send_rpc_request(rpc_method, msg)
+            send_rpc_request(rpc_method, msg, serializer: :JSON)
           end
         end
       end
