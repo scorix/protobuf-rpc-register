@@ -2,17 +2,19 @@ module Protobuf
   module Rpc
     RSpec.describe Serializer do
       context :dump do
-        subject { Serializer.dump(message) }
+        subject { Serializer.dump(message, serializer: serializer) }
 
         context :protobuf_message do
+          let(:serializer) { :RAW }
           let(:message) { Protobuf::Message.new }
           it { is_expected.to be_a Messages::RpcCompressedMessage }
-          its('serializer.name') { is_expected.to eql :RAW }
+          its('serializer.name') { is_expected.to eql serializer }
           its(:response_type) { is_expected.to eql 'Protobuf::Message' }
           its(:compressed) { is_expected.to be true }
         end
 
         context :string do
+          let(:serializer) { :MSGPACK }
           let(:message) { 'Protobuf::Message.new' }
           it { is_expected.to be_a Messages::RpcCompressedMessage }
           its(:response_type) { is_expected.to be_blank }
@@ -20,6 +22,7 @@ module Protobuf
         end
 
         context :fixnum do
+          let(:serializer) { :MSGPACK }
           let(:message) { 1 }
           it { is_expected.to be_a Messages::RpcCompressedMessage }
           its(:response_type) { is_expected.to be_blank }
@@ -27,6 +30,7 @@ module Protobuf
         end
 
         context :true do
+          let(:serializer) { :MSGPACK }
           let(:message) { true }
           it { is_expected.to be_a Messages::RpcCompressedMessage }
           its(:response_type) { is_expected.to be_blank }
@@ -34,6 +38,7 @@ module Protobuf
         end
 
         context :error do
+          let(:serializer) { :RAW }
           let(:message) { StandardError.new }
           it { is_expected.to be_a Messages::RpcCompressedMessage }
           its(:response_type) { is_expected.to eql 'Protobuf::Rpc::Messages::Error' }
@@ -42,7 +47,7 @@ module Protobuf
 
 
         context :serializer do
-          subject { Serializer.dump(message, described_class) }
+          subject { Serializer.dump(message, serializer: described_class) }
           let(:message) { 'Protobuf::Message.new' }
           shared_examples :serialize_as do |serializer_name|
             before do
