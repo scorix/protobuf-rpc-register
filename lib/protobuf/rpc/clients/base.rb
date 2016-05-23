@@ -52,11 +52,9 @@ module Protobuf
         private
 
         def internal_client
-          @internal_client ||= begin
-            names = self.class.name.split('::')
-            svc_class = [names[0..-3], 'Services', names[-1]].flatten.join('::')
-            Object.const_get(svc_class).client(host: host, port: port, timeout: timeout)
-          end
+          names = self.class.name.split('::')
+          svc_class = [names[0..-3], 'Services', names[-1]].flatten.join('::')
+          Object.const_get(svc_class).client(host: host, port: port, timeout: timeout)
         end
 
         def define_error_class(res)
