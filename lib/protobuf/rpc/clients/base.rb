@@ -112,13 +112,15 @@ module Protobuf
 
             msg = if args.first.is_a?(Protobuf::Message)
                     args.shift
+                  elsif Object.const_defined?(msg_class_name, false)
+                    msg_class = Object.const_get(msg_class_name)
+                    msg_class.new(*args)
                   elsif args.first.respond_to?(:to_hash)
                     Messages::RpcCompressedMessage.new(response_body: ActiveSupport::Gzip.compress(args.first.to_hash.to_json),
                                                        serializer: :JSON,
                                                        compressed: true)
                   else
-                    msg_class = Object.const_get(msg_class_name)
-                    msg_class.new(*args)
+                    raise ArgumentError, "#{args} should be be a Hash or Protobuf Message."
                   end
 
             response = send_rpc_request(rpc_method, msg, serializer: :JSON)
