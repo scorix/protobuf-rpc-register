@@ -107,6 +107,9 @@ module Protobuf
 
         def self.implement_rpc(rpc_method)
           define_method(rpc_method) do |*args|
+            names = self.class.name.split('::')
+            msg_class_name = [names[0..-3], 'Messages', names[-1]].flatten.join('::')
+
             msg = if args.first.is_a?(Protobuf::Message)
                     args.shift
                   elsif args.first.respond_to?(:to_hash)
@@ -114,12 +117,18 @@ module Protobuf
                                                        serializer: :JSON,
                                                        compressed: true)
                   else
-                    names = self.class.name.split('::')
-                    msg_class = Object.const_get([names[0..-3], 'Messages', names[-1]].flatten.join('::'))
+                    msg_class = Object.const_get(msg_class_name)
                     msg_class.new(*args)
                   end
 
-            send_rpc_request(rpc_method, msg, serializer: :JSON)
+            response = send_rpc_request(rpc_method, msg, serializer: :JSON)
+
+            if response.class.name == msg_class_name.pluralize
+              m = self.class.name.demodulize.underscore.pluralize.to_sym
+              response.respond_to?(m) ? response.public_send(m) : response
+            else
+              response
+            end
           end
         end
       end
