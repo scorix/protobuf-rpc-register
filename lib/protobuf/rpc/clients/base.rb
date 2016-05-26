@@ -12,8 +12,15 @@ module Protobuf
           @port = port
           @timeout = timeout
           @namespace = namespace
-          @logger ||= Logger.new(stdout)
-          @error_logger ||= Logger.new(stderr)
+          @logger = Logger.new(stdout)
+          @error_logger = Logger.new(stderr)
+
+          names = self.class.name.split('::')
+          @service =  Object.const_get([names[0..-3], 'Services', names[-1]].flatten.join('::'))
+        end
+
+        def internal_client
+          @service.client(host: host, port: port, timeout: timeout)
         end
 
         def send_rpc_request(method, msg, serializer:)
@@ -50,12 +57,6 @@ module Protobuf
         end
 
         private
-
-        def internal_client
-          names = self.class.name.split('::')
-          svc_class = [names[0..-3], 'Services', names[-1]].flatten.join('::')
-          Object.const_get(svc_class).client(host: host, port: port, timeout: timeout)
-        end
 
         def define_error_class(res)
           module_name = (@namespace || 'Protobuf').camelize

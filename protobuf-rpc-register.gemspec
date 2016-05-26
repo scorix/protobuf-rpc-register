@@ -39,4 +39,5 @@ Gem::Specification.new do |spec|
 
   spec.add_runtime_dependency 'protobuf', '~> 3.5'
   spec.add_runtime_dependency 'active_interaction', '~> 3.0'
+  spec.add_runtime_dependency 'newrelic_rpm'
 end
