@@ -1,14 +1,19 @@
 module Protobuf
   module Rpc
+    module Services
+      class TestService < Base
+      end
+    end
+
     module Clients
-      class TestClient < Base
+      class TestService < Base
       end
 
       RSpec.describe Base do
 
         context :check_response_error do
 
-          let(:client) { TestClient.new(stdout: nil, stderr: nil) }
+          let(:client) { TestService.new(stdout: nil, stderr: nil) }
           subject { client.check_response_error(message, raise_error: false) }
 
           context :protobuf_message do
