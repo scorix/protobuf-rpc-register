@@ -46,7 +46,7 @@ module Protobuf
               error = error_class.new(res.error_message)
               error.set_backtrace(res.error_backtrace)
               raise_error(error, raise_error)
-            when Protobuf::Error
+            when Protobuf::Error, Protobuf::Rpc::ClientError
               error_reason = Protobuf::Socketrpc::ErrorReason.name_for_tag(res.code).to_s.downcase
               error_class = Protobuf::Rpc.const_get(error_reason.camelize)
               error = error_class.new(res.message)
