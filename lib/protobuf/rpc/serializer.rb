@@ -33,8 +33,14 @@ module Protobuf
             end
         end
 
-        dumped_message.compressed = true if msg.is_a?(String)
-        dumped_message.response_body = ActiveSupport::Gzip.compress(dumped_message.response_body) if dumped_message.compressed
+        # if size is greater than 16k, compress it
+        if dumped_message.response_body.size > 16384
+          dumped_message.compressed = true if msg.is_a?(String)
+          dumped_message.response_body = ActiveSupport::Gzip.compress(dumped_message.response_body) if dumped_message.compressed
+        else
+          dumped_message.compressed = false
+        end
+
         dumped_message
       end
 
