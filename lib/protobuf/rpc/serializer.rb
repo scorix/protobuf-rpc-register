@@ -40,7 +40,7 @@ module Protobuf
         else
           dumped_message.compressed = false
         end
-        
+
         dumped_message
       end
 
