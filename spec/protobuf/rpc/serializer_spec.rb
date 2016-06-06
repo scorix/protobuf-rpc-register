@@ -10,7 +10,7 @@ module Protobuf
           it { is_expected.to be_a Messages::RpcCompressedMessage }
           its('serializer.name') { is_expected.to eql serializer }
           its(:response_type) { is_expected.to eql 'Protobuf::Message' }
-          its(:compressed) { is_expected.to be true }
+          its(:compressed) { is_expected.to be false }
         end
 
         context :string do
@@ -18,7 +18,7 @@ module Protobuf
           let(:message) { 'Protobuf::Message.new' }
           it { is_expected.to be_a Messages::RpcCompressedMessage }
           its(:response_type) { is_expected.to be_blank }
-          its(:compressed) { is_expected.to be true }
+          its(:compressed) { is_expected.to be false }
         end
 
         context :fixnum do
@@ -42,7 +42,7 @@ module Protobuf
           let(:message) { StandardError.new }
           it { is_expected.to be_a Messages::RpcCompressedMessage }
           its(:response_type) { is_expected.to eql 'Protobuf::Rpc::Messages::Error' }
-          its(:compressed) { is_expected.to be true }
+          its(:compressed) { is_expected.to be false }
         end
 
 
@@ -59,7 +59,7 @@ module Protobuf
             it { is_expected.to be_a Messages::RpcCompressedMessage }
             its('serializer.name') { is_expected.to eql serializer_name }
             its(:response_type) { is_expected.to be_blank }
-            its(:compressed) { is_expected.to be true }
+            its(:compressed) { is_expected.to be false }
           end
           context(:msgpack) { include_examples :serialize_as, :MSGPACK }
           context(:yaml) { include_examples :serialize_as, :YAML }

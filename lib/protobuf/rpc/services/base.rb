@@ -1,13 +1,10 @@
 require 'protobuf'
 require 'protobuf/rpc/serializer'
-require 'new_relic/agent'
 
 module Protobuf
   module Rpc
     module Services
       class Base < ::Protobuf::Rpc::Service
-
-        include ::NewRelic::Agent::Instrumentation::ControllerInstrumentation
 
         def compress_with(msg, serializer: :MSGPACK)
           if msg.is_a?(StandardError)
@@ -17,6 +14,8 @@ module Protobuf
         end
 
         def self.inherited(subclass)
+          require 'new_relic/agent'
+          subclass.include ::NewRelic::Agent::Instrumentation::ControllerInstrumentation
           subclass.inherit_rpcs!
         end
 
