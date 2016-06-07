@@ -10,18 +10,25 @@ module Protobuf
           inputs.reject { |k, v| !given?(k) && v.nil? }
         end
 
-        def self.inherited(subclass)
-          require 'new_relic/agent'
-          subclass.include ::NewRelic::Agent::Instrumentation::ControllerInstrumentation
-          subclass.add_transaction_tracer :run
-        end
+        class << self
+          def except_attributes
+            [].freeze
+          end
 
-        def self.except_attributes
-          [].freeze
-        end
+          def include_attributes
+            [].freeze
+          end
 
-        def self.include_attributes
-          [].freeze
+          private
+
+          def inherited(subclass)
+            super
+            require 'new_relic/agent'
+            subclass.include ::NewRelic::Agent::Instrumentation::ControllerInstrumentation
+            subclass.include ::NewRelic::Agent::MethodTracer
+            subclass.add_method_tracer :run
+            subclass.add_transaction_tracer :run
+          end
         end
       end
     end
