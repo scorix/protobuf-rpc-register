@@ -38,7 +38,10 @@ module Protobuf
             logger.debug(req.to_hash)
 
             begin
-              interaction = Object.const_get("#{self.class.namespace}::Interactions::#{self.class.name.demodulize}::#{class_name}", false)
+              interaction = Object.const_get(self.class.namespace, false).
+                  const_get(:Interactions, false).
+                  const_get(self.class.name.demodulize, false).
+                  const_get(class_name, false)
             rescue NameError => e
               result = Protobuf::Rpc::MethodNotFound.new(e.message)
               result.set_backtrace(e.backtrace)
