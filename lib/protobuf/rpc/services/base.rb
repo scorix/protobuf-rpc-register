@@ -8,7 +8,7 @@ module Protobuf
 
         def compress_with(msg, serializer: :MSGPACK)
           if msg.is_a?(StandardError)
-            msg = Messages::Error.new(error_class: msg.class.name, error_message: msg.message, error_backtrace: msg.backtrace)
+            msg = ::Protobuf::Rpc::Messages::Error.new(error_class: msg.class.name, error_message: msg.message, error_backtrace: msg.backtrace)
           end
           respond_with Serializer.dump(msg, serializer: serializer)
         end
@@ -38,12 +38,10 @@ module Protobuf
             logger.debug(req.to_hash)
 
             begin
-              interaction = Object.const_get(self.class.namespace, false).
-                  const_get(:Interactions, false).
-                  const_get(self.class.name.demodulize, false).
-                  const_get(class_name, false)
-            rescue NameError => e
-              result = Protobuf::Rpc::MethodNotFound.new(e.message)
+              interaction = "#{self.class.namespace}::Interactions::#{self.class.name.demodulize}::#{class_name}".constantize
+            rescue LoadError, NameError => e
+              logger.error(e)
+              result = ::Protobuf::Rpc::MethodNotFound.new("host: #{::Socket.gethostname}, message: #{e.message}")
               result.set_backtrace(e.backtrace)
             else
               begin
@@ -57,6 +55,7 @@ module Protobuf
                     result.respond_to?(:to_proto) ? result.to_proto : result
                 end
               rescue => e
+                logger.error(e)
                 result = e
               end
             end
