@@ -20,20 +20,14 @@ module Protobuf
       private
       def define_service_class(service)
         @module.const_set(:Services, Module.new) unless @module.const_defined?(:Services, false)
-        @services[service] ||= if @module::Services.const_defined?(service, false)
-                                 @module::Services.const_get(service, false)
-                               else
-                                 @module::Services.const_set(service, Class.new(Protobuf::Rpc::Services::Base))
-                               end
+        @services[service] ||= "#{@module}::Services::#{service}".safe_constantize ||
+            @module::Services.const_set(service, Class.new(Protobuf::Rpc::Services::Base))
       end
 
       def define_client_class(service)
         @module.const_set(:Clients, Module.new) unless @module.const_defined?(:Clients)
-        @clients[service] ||= if @module::Clients.const_defined?(service, false)
-                                @module::Clients.const_get(service, false)
-                              else
-                                @module::Clients.const_set(service, Class.new(Protobuf::Rpc::Clients::Base))
-                              end
+        @clients[service] ||= "#{@module}::Clients::#{service}".safe_constantize ||
+            @module::Clients.const_set(service, Class.new(Protobuf::Rpc::Clients::Base))
         @services[service].rpcs.keys.each { |m| @clients[service].implement_rpc(m) }
       end
     end
