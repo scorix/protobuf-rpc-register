@@ -41,6 +41,7 @@ module Protobuf
               interaction = "#{self.class.namespace}::Interactions::#{self.class.name.demodulize}::#{class_name}".constantize
             rescue LoadError, NameError => e
               logger.error(e)
+              NewRelic::Agent.notice_error(e) if defined?(NewRelic::Agent)
               result = ::Protobuf::Rpc::MethodNotFound.new("host: #{::Socket.gethostname}, message: #{e.message}")
               result.set_backtrace(e.backtrace)
             else
@@ -56,6 +57,7 @@ module Protobuf
                 end
               rescue => e
                 logger.error(e)
+                NewRelic::Agent.notice_error(e) if defined?(NewRelic::Agent)
                 result = e
               end
             end
