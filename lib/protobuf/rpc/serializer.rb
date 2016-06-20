@@ -2,15 +2,15 @@ module Protobuf
   module Rpc
     class Serializer
       def self.dump(msg, serializer:)
-        return msg if msg.is_a?(Messages::RpcCompressedMessage)
-        dumped_message = Messages::RpcCompressedMessage.new(compressed: false)
+        return msg if msg.is_a?(::Protobuf::Rpc::Messages::RpcCompressedMessage)
+        dumped_message = ::Protobuf::Rpc::Messages::RpcCompressedMessage.new(compressed: false)
 
         # serialize the message
         case msg
           when ::Protobuf::Message
             proto(dumped_message, msg)
           when StandardError
-            error = Messages::Error.new(error_class: msg.class.name,
+            error = ::Protobuf::Rpc::Messages::Error.new(error_class: msg.class.name,
                                         error_message: msg.message,
                                         error_backtrace: msg.backtrace)
             proto(dumped_message, error)
@@ -45,7 +45,7 @@ module Protobuf
       end
 
       def self.load(msg)
-        return msg unless msg.is_a?(Messages::RpcCompressedMessage)
+        return msg unless msg.is_a?(::Protobuf::Rpc::Messages::RpcCompressedMessage)
         body = msg.compressed ? ActiveSupport::Gzip.decompress(msg.response_body) : msg.response_body
 
         if msg.response_type.present?

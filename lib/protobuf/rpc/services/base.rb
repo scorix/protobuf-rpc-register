@@ -48,7 +48,7 @@ module Protobuf
               begin
                 result = interaction.run!(req.to_hash)
                 case result
-                  when Protobuf::Message
+                  when ::Protobuf::Message
                     result
                   when ::ActiveRecord::Base, ::ActiveRecord::Relation
                     result = result.to_proto(deprecated: false, except: interaction.except_attributes, include: interaction.include_attributes)
