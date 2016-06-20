@@ -1,3 +1,6 @@
+require 'protobuf'
+require 'protobuf/message'
+
 require 'protobuf/rpc/register/version'
 require 'protobuf/rpc/generator'
 require 'protobuf/rpc/clients/base'
