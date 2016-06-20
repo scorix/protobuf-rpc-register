@@ -1,6 +1,3 @@
-require 'protobuf'
-require 'protobuf/rpc/serializer'
-
 module Protobuf
   module Rpc
     module Services
