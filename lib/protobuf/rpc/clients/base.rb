@@ -16,7 +16,7 @@ module Protobuf
           @error_logger = Logger.new(stderr)
 
           names = self.class.name.split('::')
-          @service =  Object.const_get([names[0..-3], 'Services', names[-1]].flatten.join('::'))
+          @service = Object.const_get([names[0..-3], 'Services', names[-1]].flatten.join('::'))
         end
 
         def internal_client
@@ -60,16 +60,18 @@ module Protobuf
 
         def define_error_class(res)
           module_name = (@namespace || 'Protobuf').camelize
-          m = Object.const_defined?(module_name, false) ? Object.const_get(module_name, false) : Object.const_set(module_name, Module.new)
-          m.const_defined?(:Rpc, false) ? m.const_get(:Rpc, false) : m.const_set(:Rpc, Module.new)
+          c = if res.error_class.start_with?("Protobuf::Rpc") && module_name == "Protobuf"
+                res.error_class
+              else
+                "#{module_name}::Rpc::#{res.error_class}"
+              end
 
-          if m.const_defined?(res.error_class, false)
-            m.const_get(res.error_class, false)
+          if c.safe_constantize
+            c.safe_constantize
           else
-            module_name = res.error_class.deconstantize
             class_name = res.error_class.demodulize
-            base_module = m::Rpc
-            module_name.split('::').each do |m|
+            base_module = Object
+            c.split('::')[0..-2].each do |m|
               base_module.const_defined?(m, false) || base_module.const_set(m, Module.new)
               base_module = base_module.const_get(m, false)
             end
@@ -79,23 +81,19 @@ module Protobuf
             rescue LoadError
               raise NameError.new("uninitialized constant #{res.error_class}", res.error_class)
             end
-            if base_module.const_defined?(class_name, false)
-              base_module.const_get(class_name, false)
-            else
-              base_module.const_set(class_name, Class.new(error_superclass) do
-                def initialize(message = nil)
-                  @message = message
-                end
+            base_module.const_set(class_name, Class.new(error_superclass) do
+              def initialize(message = nil)
+                @message = message
+              end
 
-                def inspect
-                  "#{self.class}: #{@message}"
-                end
+              def inspect
+                "#{self.class}: #{@message}"
+              end
 
-                def message
-                  @message
-                end
-              end)
-            end
+              def message
+                @message
+              end
+            end)
           end
         end
 
@@ -116,8 +114,8 @@ module Protobuf
                     msg_class.new(*args)
                   elsif args.first.respond_to?(:to_hash)
                     ::Protobuf::Rpc::Messages::RpcCompressedMessage.new(response_body: args.first.to_hash.to_json,
-                                                       serializer: :JSON,
-                                                       compressed: false)
+                                                                        serializer: :JSON,
+                                                                        compressed: false)
                   else
                     raise ArgumentError, "#{args} should be be a Hash or Protobuf Message."
                   end
