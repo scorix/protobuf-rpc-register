@@ -25,8 +25,6 @@ module Protobuf
             super
             require 'new_relic/agent'
             subclass.include ::NewRelic::Agent::Instrumentation::ControllerInstrumentation
-            subclass.include ::NewRelic::Agent::MethodTracer
-            subclass.add_method_tracer :run
             subclass.add_transaction_tracer :run
           end
         end
