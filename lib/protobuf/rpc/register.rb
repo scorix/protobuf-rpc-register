@@ -1,5 +1,5 @@
 require 'protobuf'
-require 'protobuf/message'
+require 'protobuf/rpc/rpc.pb'
 
 require 'protobuf/rpc/register/version'
 require 'protobuf/rpc/generator'
