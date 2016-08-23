@@ -18,15 +18,6 @@ module Protobuf
           def include_attributes
             [].freeze
           end
-
-          private
-
-          def inherited(subclass)
-            super
-            require 'new_relic/agent'
-            subclass.include ::NewRelic::Agent::Instrumentation::ControllerInstrumentation
-            subclass.add_transaction_tracer :run
-          end
         end
       end
     end

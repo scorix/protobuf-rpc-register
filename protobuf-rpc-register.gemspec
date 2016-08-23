@@ -36,7 +36,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'msgpack', "~> 0.5"
   spec.add_development_dependency 'multi_json', "~> 1.0"
   spec.add_development_dependency 'oj', "~> 2.0"
-  spec.add_development_dependency 'newrelic_rpm'
 
   spec.add_runtime_dependency 'protobuf', '~> 3.5'
   spec.add_runtime_dependency 'active_interaction', '~> 3.0'

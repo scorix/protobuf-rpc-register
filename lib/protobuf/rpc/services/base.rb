@@ -11,8 +11,6 @@ module Protobuf
         end
 
         def self.inherited(subclass)
-          require 'new_relic/agent'
-          subclass.include ::NewRelic::Agent::Instrumentation::ControllerInstrumentation
           subclass.inherit_rpcs!
         end
 
@@ -61,8 +59,6 @@ module Protobuf
 
             compress_with result
           end
-
-          add_transaction_tracer method
         end
       end
     end
