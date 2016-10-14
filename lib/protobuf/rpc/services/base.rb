@@ -3,7 +3,7 @@ module Protobuf
     module Services
       class Base < ::Protobuf::Rpc::Service
 
-        def compress_with(msg, serializer: :MSGPACK)
+        def compress_with(msg, serializer: :JSON)
           if msg.is_a?(StandardError)
             msg = ::Protobuf::Rpc::Messages::Error.new(error_class: msg.class.name, error_message: msg.message, error_backtrace: msg.backtrace)
           end
@@ -11,8 +11,6 @@ module Protobuf
         end
 
         def self.inherited(subclass)
-          require 'new_relic/agent'
-          subclass.include ::NewRelic::Agent::Instrumentation::ControllerInstrumentation
           subclass.inherit_rpcs!
         end
 
@@ -61,8 +59,6 @@ module Protobuf
 
             compress_with result
           end
-
-          add_transaction_tracer method
         end
       end
     end
