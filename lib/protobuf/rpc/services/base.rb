@@ -3,7 +3,7 @@ module Protobuf
     module Services
       class Base < ::Protobuf::Rpc::Service
 
-        def compress_with(msg, serializer: :MSGPACK)
+        def compress_with(msg, serializer: :JSON)
           if msg.is_a?(StandardError)
             msg = ::Protobuf::Rpc::Messages::Error.new(error_class: msg.class.name, error_message: msg.message, error_backtrace: msg.backtrace)
           end
