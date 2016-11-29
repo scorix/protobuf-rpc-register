@@ -1,5 +1,5 @@
-require 'new_relic/agent/instrumentation/action_controller_subscriber'
-
+# NOTE: please require this file in your app config file:
+# require 'protobuf/rpc/interaction_instrumentation'
 DependencyDetection.defer do
   @name = :active_interaction
 
@@ -9,6 +9,7 @@ DependencyDetection.defer do
 
   executes do
     ::NewRelic::Agent.logger.info 'Installing ActiveInteraction instrumentation'
+    require 'new_relic/agent/instrumentation/controller_instrumentation'
   end
 
   executes do
